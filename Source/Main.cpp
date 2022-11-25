@@ -16,10 +16,10 @@
 int main()
 {
 	unsigned char current_level = 0;
-
+	
 	unsigned short level_finish = 0;
 	
-	//We'll use this to make the game framerate-independent.
+	//We'll use this to make the game framerate-independent.OK JUST test
 	std::chrono::microseconds lag(0);
 
 	std::chrono::steady_clock::time_point previous_time;
