@@ -3,6 +3,8 @@ project(super_mario)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_executable(super_mari Source/Main.cpp)
+
 include_directories(Source/Headers)
 
 add_executable(super_mario
@@ -28,3 +30,10 @@ add_executable(super_mario
         Source/MapManager.cpp
         Source/Mario.cpp
         Source/Mushroom.cpp)
+
+set(SFML_STATIC_LIBRARIES TURE)
+set(SFML_DIR C:/SFML/lib/cmake/SFML)
+find_package(SFML COMPONENTS system window graphics audio network REQUIRED)
+
+include_directories(C:/SFML/include)
+target_link_libraries(super_mari sfml-system sfml-window sfml-graphics sfml-audio)
