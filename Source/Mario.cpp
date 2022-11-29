@@ -144,11 +144,7 @@ void Mario::draw(sf::RenderWindow& i_window)
 							texture.loadFromFile("Resources/Images/BigMarioIdle.png");
 						}
 					}
-					else if ((0 < horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
-							  1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) ||
-							 (0 > horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
-							  1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right)))
-
+					else if (is_moving_or_not(horizontal_speed))
 					{
 						if (0 == draw_big)
 						{
@@ -190,10 +186,7 @@ void Mario::draw(sf::RenderWindow& i_window)
 				{
 					texture.loadFromFile("Resources/Images/MarioIdle.png");
 				}
-				else if ((0 < horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
-						  1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) ||
-						 (0 > horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
-						  1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right)))
+				else if (is_moving_or_not(horizontal_speed))
 
 				{
 					texture.loadFromFile("Resources/Images/MarioBrake.png");
@@ -313,16 +306,14 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		if (0 == crouching)
 		{
-			if (0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
-				1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+			if (user_press_left())
 			{
 				moving = 1;
 
 				horizontal_speed = std::max(horizontal_speed - MARIO_ACCELERATION, -MARIO_WALK_SPEED);
 			}
 
-			if (0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
-				1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+			if (user_press_right())
 			{
 				moving = 1;
 
@@ -344,7 +335,7 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		if (0 < powerup_state)
 		{
-			if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::C) || 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			if (user_press_down())
 			{
 				if (0 == crouching)
 				{
@@ -429,7 +420,7 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 		
-		if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+		if (user_press_up())
 		{
 			if (0 == vertical_speed && 0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
 			{
@@ -632,4 +623,31 @@ sf::FloatRect Mario::get_hit_box() const
 	{
 		return sf::FloatRect(x, y, CELL_SIZE, 2 * CELL_SIZE);
 	}
+}
+
+bool Mario::is_moving_or_not(int horizontal_speed){
+	return (0 < horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
+			1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) ||
+		   (0 > horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
+			1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right));
+}
+		
+bool Mario::user_press_left(){
+	return 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
+		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
+}
+
+bool Mario::user_press_right(){
+	return 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
+		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
+}
+
+bool Mario::user_press_down(){
+	return 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::C) || 
+		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
+}
+
+bool Mario::user_press_up(){
+	return 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || 
+		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
 }
