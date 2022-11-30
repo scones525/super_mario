@@ -38,7 +38,7 @@ int main()
 
 	MapManager map_manager;
 
-	Mario mario,mario2;
+	Mario mario;
 
 	convert_sketch(current_level, level_finish, enemies, background_color, map_manager, mario);
 

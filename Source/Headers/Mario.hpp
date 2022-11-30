@@ -1,6 +1,8 @@
+#ifndef MARIO_H
+#define MARIO_H
 #pragma once
-
-class Mario
+#include "IMario.hpp"
+class Mario : public IMario
 {
 	bool crouching;
 	bool dead;
@@ -65,3 +67,5 @@ public:
 	bool user_press_down();
 	bool user_press_up();
 };
+
+#endif
