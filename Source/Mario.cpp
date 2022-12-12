@@ -304,34 +304,7 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		on_ground = 0;
 
-		if (0 == crouching)
-		{
-			if (user_press_left())
-			{
-				moving = 1;
-
-				horizontal_speed = std::max(horizontal_speed - MARIO_ACCELERATION, -MARIO_WALK_SPEED);
-			}
-
-			if (user_press_right())
-			{
-				moving = 1;
-
-				horizontal_speed = std::min(MARIO_ACCELERATION + horizontal_speed, MARIO_WALK_SPEED);
-			}
-		}
-
-		if (0 == moving)
-		{
-			if (0 < horizontal_speed)
-			{
-				horizontal_speed = std::max<float>(0, horizontal_speed - MARIO_ACCELERATION);
-			}
-			else if (0 > horizontal_speed)
-			{
-				horizontal_speed = std::min<float>(0, MARIO_ACCELERATION + horizontal_speed);
-			}
-		}
+		update_moving_state(moving);
 
 		if (0 < powerup_state)
 		{
@@ -592,7 +565,7 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 	}
 	else
 	{
-		state_is_dead();
+		update_state_is_dead();
 	}
 
 	//Deleting mushrooms from the vector.
@@ -642,7 +615,8 @@ bool Mario::user_press_up(){
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
 }
 
-void Mario::state_is_dead(){
+
+void Mario::update_state_is_dead(){
 	if (0 == death_timer)
 		{
 			vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
@@ -654,4 +628,34 @@ void Mario::state_is_dead(){
 		}
 
 		death_timer = std::max(0, death_timer - 1);
+}
+void Mario::update_moving_state(bool moving){
+	if (0 == crouching)
+		{
+			if (user_press_left())
+			{
+				moving = 1;
+
+				horizontal_speed = std::max(horizontal_speed - MARIO_ACCELERATION, -MARIO_WALK_SPEED);
+			}
+
+			if (user_press_right())
+			{
+				moving = 1;
+
+				horizontal_speed = std::min(MARIO_ACCELERATION + horizontal_speed, MARIO_WALK_SPEED);
+			}
+		}
+
+		if (0 == moving)
+		{
+			if (0 < horizontal_speed)
+			{
+				horizontal_speed = std::max<float>(0, horizontal_speed - MARIO_ACCELERATION);
+			}
+			else if (0 > horizontal_speed)
+			{
+				horizontal_speed = std::min<float>(0, MARIO_ACCELERATION + horizontal_speed);
+			}
+		}
 }
