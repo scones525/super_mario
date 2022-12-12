@@ -39,7 +39,7 @@ int main()
 	MapManager map_manager;
 
 	Mario mario;
-
+	
 	convert_sketch(current_level, level_finish, enemies, background_color, map_manager, mario);
 
 	previous_time = std::chrono::steady_clock::now();

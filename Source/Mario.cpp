@@ -592,17 +592,7 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 	}
 	else
 	{
-		if (0 == death_timer)
-		{
-			vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
-			y += vertical_speed;
-		}
-		else if (1 == death_timer)
-		{
-			vertical_speed = MARIO_JUMP_SPEED;
-		}
-
-		death_timer = std::max(0, death_timer - 1);
+		state_is_dead();
 	}
 
 	//Deleting mushrooms from the vector.
@@ -650,4 +640,18 @@ bool Mario::user_press_down(){
 bool Mario::user_press_up(){
 	return 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || 
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
+}
+
+void Mario::state_is_dead(){
+	if (0 == death_timer)
+		{
+			vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
+			y += vertical_speed;
+		}
+		else if (1 == death_timer)
+		{
+			vertical_speed = MARIO_JUMP_SPEED;
+		}
+
+		death_timer = std::max(0, death_timer - 1);
 }

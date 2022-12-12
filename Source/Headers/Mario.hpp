@@ -66,6 +66,7 @@ public:
 	bool user_press_right();
 	bool user_press_down();
 	bool user_press_up();
+	void state_is_dead();
 };
 
 #endif
