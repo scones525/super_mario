@@ -9,6 +9,7 @@
 #include "Headers/Mushroom.hpp"
 #include "Headers/Mario.hpp"
 
+
 Mario::Mario() :
 	crouching(0),
 	dead(0),
@@ -277,19 +278,6 @@ void Mario::set_vertical_speed(const float i_value)
 
 void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 {
-	//We make Mario bounce after updating all the enemies to prevent a bug (Go to Mario.hpp for explanation).
-	if (0 != enemy_bounce_speed)
-	{
-		vertical_speed = enemy_bounce_speed;
-
-		enemy_bounce_speed = 0;
-	}
-
-	for (Mushroom& mushroom : mushrooms)
-	{
-		mushroom.update(i_view_x, i_map_manager);
-	}
-
 	if (0 == dead)
 	{
 		bool moving = 0;
@@ -308,58 +296,9 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		if (0 < powerup_state)
 		{
-			if (user_press_down())
-			{
-				if (0 == crouching)
-				{
-					crouching = 1;
-
-					y += CELL_SIZE;
-				}
-			}
-			else if (1 == crouching)
-			{
-				hit_box.height += CELL_SIZE;
-				hit_box.top -= CELL_SIZE;
-
-				//Making sure we can stand up without hitting anything.
-				collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
-
-				if (1 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-				{
-					return 0 == i_value;
-				}))
-				{
-					crouching = 0;
-
-					y -= CELL_SIZE;
-				}
-				else
-				{
-					collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
-
-					//But if it happens to be bricks, we'll destroy them.
-					if (1 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-					{
-						return 0 == i_value;
-					}))
-					{
-						crouching = 0;
-
-						y -= CELL_SIZE;
-
-						i_map_manager.map_collision({Cell::Brick}, cells, hit_box);
-
-						for (const sf::Vector2i& cell : cells)
-						{
-							i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
-							i_map_manager.add_brick_particles(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
-						}
-					}
-				}
-			}
+			update_change_moving_state(i_map_manager);
 		}
-
+		/*
 		hit_box = get_hit_box();
 		hit_box.left += horizontal_speed;
 		
@@ -386,7 +325,9 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 		else
 		{
 			x += horizontal_speed;
-		}
+		}*/
+		moving = update_horizon_move(i_map_manager);
+
 
 		hit_box = get_hit_box();
 		hit_box.top++;
@@ -563,11 +504,23 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 			big_walk_animation.update();
 		}
 	}
+
 	else
 	{
 		update_state_is_dead();
 	}
 
+	if (0 != enemy_bounce_speed)
+	{
+		vertical_speed = enemy_bounce_speed;
+
+		enemy_bounce_speed = 0;
+	}
+
+	for (Mushroom& mushroom : mushrooms)
+	{
+		mushroom.update(i_view_x, i_map_manager);
+	}
 	//Deleting mushrooms from the vector.
 	mushrooms.erase(remove_if(mushrooms.begin(), mushrooms.end(), [](const Mushroom& i_mushroom)
 	{
@@ -588,29 +541,29 @@ sf::FloatRect Mario::get_hit_box() const
 	}
 }
 
-bool Mario::is_moving_or_not(int horizontal_speed){
+bool is_moving_or_not(int horizontal_speed){
 	return (0 < horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
 			1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) ||
 		   (0 > horizontal_speed && 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
 			1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right));
 }
 		
-bool Mario::user_press_left(){
+bool user_press_left(){
 	return 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
 }
 
-bool Mario::user_press_right(){
+bool user_press_right(){
 	return 0 == sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
 }
 
-bool Mario::user_press_down(){
+bool user_press_down(){
 	return 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::C) || 
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
 }
 
-bool Mario::user_press_up(){
+bool user_press_up(){
 	return 1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || 
 		   1 == sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
 }
@@ -658,4 +611,90 @@ void Mario::update_moving_state(bool moving){
 				horizontal_speed = std::min<float>(0, MARIO_ACCELERATION + horizontal_speed);
 			}
 		}
+}
+void Mario::update_change_moving_state(MapManager& i_map_manager){
+	std::vector<sf::Vector2i> cells;
+	if (user_press_down())
+	{
+		if (0 == crouching)
+		{
+			crouching = 1;
+
+			y += CELL_SIZE;
+		}
+	}
+	else if (1 == crouching)
+	{
+		sf::FloatRect hit_box = get_hit_box();
+		hit_box.height += CELL_SIZE;
+		hit_box.top -= CELL_SIZE;
+
+		//Making sure we can stand up without hitting anything.
+		std::vector<unsigned char> collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+
+		if (1 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+		{
+			return 0 == i_value;
+		}))
+		{
+			crouching = 0;
+
+			y -= CELL_SIZE;
+		}
+		else
+		{
+			collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+
+			//But if it happens to be bricks, we'll destroy them.
+			if (1 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+			{
+				return 0 == i_value;
+			}))
+			{
+				crouching = 0;
+
+				y -= CELL_SIZE;
+
+				i_map_manager.map_collision({Cell::Brick}, cells, hit_box);
+
+				for (const sf::Vector2i& cell : cells)
+				{
+					i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
+					i_map_manager.add_brick_particles(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
+				}
+			}
+		}
+	}
+}
+bool Mario::update_horizon_move(MapManager& i_map_manager){
+	std::vector<sf::Vector2i> cells;
+	sf::FloatRect hit_box = get_hit_box();
+	hit_box = get_hit_box();
+	hit_box.left += horizontal_speed;
+	bool moving = 0;
+	std::vector<unsigned char> collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+
+	if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+	{
+		return 0 == i_value;
+	}))
+	{
+		moving = 0;
+
+		if (0 < horizontal_speed)
+		{
+			x = CELL_SIZE * (ceil((horizontal_speed + x) / CELL_SIZE) - 1);
+		}
+		else if (0 > horizontal_speed)
+		{
+			x = CELL_SIZE * (1 + floor((horizontal_speed + x) / CELL_SIZE));
+		}
+
+		horizontal_speed = 0;
+	}
+	else
+	{
+		x += horizontal_speed;
+	}
+	return moving;
 }

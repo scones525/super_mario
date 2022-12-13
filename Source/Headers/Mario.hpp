@@ -60,15 +60,17 @@ public:
 
 	sf::FloatRect get_hit_box() const;
 
-	//my function to clean code
-	bool is_moving_or_not(int);
-	bool user_press_left();
-	bool user_press_right();
-	bool user_press_down();
-	bool user_press_up();
 
 	void update_state_is_dead();
 	void update_moving_state(bool moving);
+	void update_change_moving_state(MapManager& i_map_manager);
+	bool update_horizon_move(MapManager& i_map_manager);
 };
 
+
+bool is_moving_or_not(int);
+bool user_press_left();
+bool user_press_right();
+bool user_press_down();
+bool user_press_up();
 #endif

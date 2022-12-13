@@ -22,12 +22,6 @@ public:
 
 	sf::FloatRect get_hit_box() const;
 
-	//my function to clean code
-	bool is_moving_or_not(int);
-	bool user_press_left();
-	bool user_press_right();
-	bool user_press_down();
-	bool user_press_up();
 };
 
 #endif
