@@ -65,6 +65,10 @@ public:
 	void update_moving_state(bool moving);
 	void update_change_moving_state(MapManager& i_map_manager);
 	bool update_horizon_move(MapManager& i_map_manager);
+	void update_verticle_move(MapManager& i_map_manager);
+	void update_is_moving_now(MapManager& i_map_manager,bool moving);
+	void update_eat_mushroom(MapManager& i_map_manager,const unsigned i_view_x);
+	void update_coin(MapManager& i_map_manager);
 };
 
 

@@ -298,190 +298,16 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 		{
 			update_change_moving_state(i_map_manager);
 		}
-		/*
-		hit_box = get_hit_box();
-		hit_box.left += horizontal_speed;
-		
-		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
 
-		if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-		{
-			return 0 == i_value;
-		}))
-		{
-			moving = 0;
-
-			if (0 < horizontal_speed)
-			{
-				x = CELL_SIZE * (ceil((horizontal_speed + x) / CELL_SIZE) - 1);
-			}
-			else if (0 > horizontal_speed)
-			{
-				x = CELL_SIZE * (1 + floor((horizontal_speed + x) / CELL_SIZE));
-			}
-
-			horizontal_speed = 0;
-		}
-		else
-		{
-			x += horizontal_speed;
-		}*/
 		moving = update_horizon_move(i_map_manager);
 
+		update_verticle_move(i_map_manager);
 
-		hit_box = get_hit_box();
-		hit_box.top++;
+		update_is_moving_now(i_map_manager,moving);
 
-		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
-		
-		if (user_press_up())
-		{
-			if (0 == vertical_speed && 0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-			{
-				return 0 == i_value;
-			}))
-			{
-				vertical_speed = MARIO_JUMP_SPEED;
+		update_eat_mushroom(i_map_manager,i_view_x);
 
-				jump_timer = MARIO_JUMP_TIMER;
-			}
-			else if (0 < jump_timer) //The longer we press the jump button, the higher Mario jumps.
-			{
-				vertical_speed = MARIO_JUMP_SPEED;
-
-				jump_timer--;
-			}
-			else
-			{
-				vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
-			}
-		}
-		else
-		{
-			vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
-
-			jump_timer = 0;
-		}
-
-		hit_box = get_hit_box();
-		hit_box.top += vertical_speed;
-
-		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
-		
-		if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-		{
-			return 0 == i_value;
-		}))
-		{
-			if (0 > vertical_speed)
-			{
-				//Destroying bricks!!!!
-				if (0 == crouching && 0 < powerup_state)
-				{
-					i_map_manager.map_collision({Cell::Brick}, cells, hit_box);
-
-					for (const sf::Vector2i& cell : cells)
-					{
-						i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
-						i_map_manager.add_brick_particles(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
-					}
-				}
-
-				i_map_manager.map_collision({Cell::QuestionBlock}, cells, hit_box);
-
-				//Activating question blocks!!!!
-				for (const sf::Vector2i& cell : cells)
-				{
-					i_map_manager.set_map_cell(cell.x, cell.y, Cell::ActivatedQuestionBlock);
-
-					//It can be either a mushroom or a coin, depending on the color of the pixel in the sketch.
-					if (sf::Color(255, 73, 85) == i_map_manager.get_map_sketch_pixel(cell.x, cell.y))
-					{
-						mushrooms.push_back(Mushroom(CELL_SIZE * cell.x, CELL_SIZE * cell.y));
-					}
-					else
-					{
-						i_map_manager.add_question_block_coin(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
-					}
-				}
-
-				y = CELL_SIZE * (1 + floor((vertical_speed + y) / CELL_SIZE));
-			}
-			else if (0 < vertical_speed)
-			{
-				y = CELL_SIZE * (ceil((vertical_speed + y) / CELL_SIZE) - 1);
-			}
-
-			jump_timer = 0;
-
-			vertical_speed = 0;
-		}
-		else
-		{
-			y += vertical_speed;
-		}
-
-		if (0 == horizontal_speed)
-		{
-			if (1 == moving)
-			{
-				flipped = 1 - flipped;
-			}
-		}
-		else if (0 < horizontal_speed)
-		{
-			flipped = 0;
-		}
-		else if (0 > horizontal_speed)
-		{
-			flipped = 1;
-		}
-
-		hit_box = get_hit_box();
-		hit_box.top++;
-
-		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
-
-		if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
-		{
-			return 0 == i_value;
-		}))
-		{
-			on_ground = 1;
-		}
-
-		for (Mushroom& mushroom : mushrooms)
-		{
-			//Mushroom eating and becoming BIG, STRONG, MASCULINE!!!!
-			if (1 == get_hit_box().intersects(mushroom.get_hit_box()))
-			{
-				mushroom.set_dead(1);
-
-				if (0 == powerup_state)
-				{
-					powerup_state = 1;
-
-					growth_timer = MARIO_GROWTH_DURATION;
-
-					y -= CELL_SIZE;
-				}
-			}
-		}
-
-		if (0 < invincible_timer)
-		{
-			invincible_timer--;
-		}
-
-		hit_box = get_hit_box();
-
-		i_map_manager.map_collision({Cell::Coin}, cells, hit_box);
-
-		//Collecting coins.
-		for (const sf::Vector2i& cell : cells)
-		{
-			i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
-		}
+		update_coin(i_map_manager);
 
 		if (0 < growth_timer)
 		{
@@ -516,16 +342,6 @@ void Mario::update(const unsigned i_view_x, MapManager& i_map_manager)
 
 		enemy_bounce_speed = 0;
 	}
-
-	for (Mushroom& mushroom : mushrooms)
-	{
-		mushroom.update(i_view_x, i_map_manager);
-	}
-	//Deleting mushrooms from the vector.
-	mushrooms.erase(remove_if(mushrooms.begin(), mushrooms.end(), [](const Mushroom& i_mushroom)
-	{
-		return 1 == i_mushroom.get_dead();
-	}), mushrooms.end());
 }
 
 sf::FloatRect Mario::get_hit_box() const
@@ -697,4 +513,182 @@ bool Mario::update_horizon_move(MapManager& i_map_manager){
 		x += horizontal_speed;
 	}
 	return moving;
+}
+
+void Mario::update_verticle_move(MapManager& i_map_manager){
+		sf::FloatRect hit_box = get_hit_box();
+		std::vector<unsigned char> collision;
+
+
+		hit_box = get_hit_box();
+		hit_box.top++;
+
+		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+		
+		if (user_press_up())
+		{
+			if (0 == vertical_speed && 0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+			{
+				return 0 == i_value;
+			}))
+			{
+				vertical_speed = MARIO_JUMP_SPEED;
+
+				jump_timer = MARIO_JUMP_TIMER;
+			}
+			else if (0 < jump_timer) //The longer we press the jump button, the higher Mario jumps.
+			{
+				vertical_speed = MARIO_JUMP_SPEED;
+
+				jump_timer--;
+			}
+			else
+			{
+				vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
+			}
+		}
+		else
+		{
+			vertical_speed = std::min(GRAVITY + vertical_speed, MAX_VERTICAL_SPEED);
+
+			jump_timer = 0;
+		}
+}
+
+void Mario::update_is_moving_now(MapManager& i_map_manager,bool moving){
+		std::vector<sf::Vector2i> cells;
+		sf::FloatRect hit_box = get_hit_box();
+		std::vector<unsigned char> collision;
+
+
+		hit_box = get_hit_box();
+		hit_box.top += vertical_speed;
+
+		collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+		
+		if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+		{
+			return 0 == i_value;
+		}))
+		{
+			if (0 > vertical_speed)
+			{
+				//Destroying bricks!!!!
+				if (0 == crouching && 0 < powerup_state)
+				{
+					i_map_manager.map_collision({Cell::Brick}, cells, hit_box);
+
+					for (const sf::Vector2i& cell : cells)
+					{
+						i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
+						i_map_manager.add_brick_particles(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
+					}
+				}
+
+				i_map_manager.map_collision({Cell::QuestionBlock}, cells, hit_box);
+
+				//Activating question blocks!!!!
+				for (const sf::Vector2i& cell : cells)
+				{
+					i_map_manager.set_map_cell(cell.x, cell.y, Cell::ActivatedQuestionBlock);
+
+					//It can be either a mushroom or a coin, depending on the color of the pixel in the sketch.
+					if (sf::Color(255, 73, 85) == i_map_manager.get_map_sketch_pixel(cell.x, cell.y))
+					{
+						mushrooms.push_back(Mushroom(CELL_SIZE * cell.x, CELL_SIZE * cell.y));
+					}
+					else
+					{
+						i_map_manager.add_question_block_coin(CELL_SIZE * cell.x, CELL_SIZE * cell.y);
+					}
+				}
+
+				y = CELL_SIZE * (1 + floor((vertical_speed + y) / CELL_SIZE));
+			}
+			else if (0 < vertical_speed)
+			{
+				y = CELL_SIZE * (ceil((vertical_speed + y) / CELL_SIZE) - 1);
+			}
+
+			jump_timer = 0;
+
+			vertical_speed = 0;
+		}
+		else
+		{
+			y += vertical_speed;
+		}
+
+		if (0 == horizontal_speed)
+		{
+			if (1 == moving)
+			{
+				flipped = 1 - flipped;
+			}
+		}
+		else if (0 < horizontal_speed)
+		{
+			flipped = 0;
+		}
+		else if (0 > horizontal_speed)
+		{
+			flipped = 1;
+		}
+}
+void Mario::update_eat_mushroom(MapManager& i_map_manager,const unsigned i_view_x){
+		sf::FloatRect hit_box = get_hit_box();
+		hit_box.top++;
+
+		std::vector<unsigned char> collision = i_map_manager.map_collision({Cell::ActivatedQuestionBlock, Cell::Brick, Cell::Pipe, Cell::QuestionBlock, Cell::Wall}, hit_box);
+
+		if (0 == std::all_of(collision.begin(), collision.end(), [](const unsigned char i_value)
+		{
+			return 0 == i_value;
+		}))
+		{
+			on_ground = 1;
+		}
+
+		for (Mushroom& mushroom : mushrooms)
+		{
+			//Mushroom eating and becoming BIG, STRONG, MASCULINE!!!!
+			if (1 == get_hit_box().intersects(mushroom.get_hit_box()))
+			{
+				mushroom.set_dead(1);
+
+				if (0 == powerup_state)
+				{
+					powerup_state = 1;
+
+					growth_timer = MARIO_GROWTH_DURATION;
+
+					y -= CELL_SIZE;
+				}
+			}
+		}
+		if (0 < invincible_timer)
+		{
+			invincible_timer--;
+		}
+		for (Mushroom& mushroom : mushrooms)
+		{
+			mushroom.update(i_view_x, i_map_manager);
+		}
+		//Deleting mushrooms from the vector.
+		mushrooms.erase(remove_if(mushrooms.begin(), mushrooms.end(), [](const Mushroom& i_mushroom)
+		{
+			return 1 == i_mushroom.get_dead();
+		}), mushrooms.end());
+}
+void Mario::update_coin(MapManager& i_map_manager){
+	sf::FloatRect hit_box = get_hit_box();
+	std::vector<sf::Vector2i> cells;
+
+	i_map_manager.map_collision({Cell::Coin}, cells, hit_box);
+
+	//Collecting coins.
+	for (const sf::Vector2i& cell : cells)
+	{
+		i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
+	}
 }
