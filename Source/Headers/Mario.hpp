@@ -1,22 +1,15 @@
 #ifndef MARIO_H
 #define MARIO_H
 #pragma once
-#include "IMario.hpp"
-class Mario : public IMario
+
+
+class Mario 
 {
 	bool crouching;
 	bool dead;
 	bool flipped;
 	bool on_ground;
-
-	//Oh, this is a funny story!
-	//So I was working on level 1-2 when I discovered a simple bug.
-	//The bug was that when 2 Goombas stand SUPER close to each other and Mario jumps on them, one goomba dies and the other kills Mario.
-	//This was happening because the first Goomba was setting Mario's vertical speed below 0 after dying.
-	//Then the second Goomba checked the collision with Mario and saw that Mario wasn't squishing anymore and instead was going upwards.
-	//So he was killing Mario.
-	//And by adding this variable, I fixed the bug.
-	//Hehe.
+	
 	float enemy_bounce_speed;
 	float horizontal_speed;
 	float vertical_speed;
@@ -42,8 +35,21 @@ class Mario : public IMario
 
 	Animation big_walk_animation;
 	Animation walk_animation;
+
+	//State pattern
+	class State *current;
+
+
 public:
 	Mario();
+
+
+	//State pattern implement
+	void setCurrent(State *s){
+		current = s;
+	}
+	void SmallToBigMario();
+	void bigToSmallMario();
 
 	bool get_dead() const;
 
@@ -70,6 +76,23 @@ public:
 	void update_eat_mushroom(MapManager& i_map_manager,const unsigned i_view_x);
 	void update_coin(MapManager& i_map_manager);
 };
+
+
+
+/*class BigMario : public Istate
+{
+	private : 
+		static BigMario instance = new BigMario();
+		BigMario();
+	public :
+		static BigMario GetInstance{
+			return instance;
+		}
+};
+
+class SmallMario : public Istate{
+
+};*/
 
 
 bool is_moving_or_not(int);
