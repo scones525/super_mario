@@ -6,7 +6,6 @@
 #include "Headers/Global.hpp"
 #include "Headers/MapManager.hpp"
 #include "Headers/Mushroom.hpp"
-#include "Headers/IMario.hpp"
 #include "Headers/Enemy.hpp"
 
 Enemy::Enemy(const float i_x, const float i_y) :

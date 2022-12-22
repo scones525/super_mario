@@ -4,6 +4,7 @@
 #include "MapManager.hpp"
 
 #include "Mario.hpp"
+
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>

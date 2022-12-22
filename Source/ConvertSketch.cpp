@@ -11,6 +11,7 @@
 #include "Headers/Enemy.hpp"
 #include "Headers/Goomba.hpp"
 #include "Headers/Koopa.hpp"
+#include "Headers/MarioState.hpp"
 #include "Headers/ConvertSketch.hpp"
 
 //One person asked, "Why don't you use Tiled Map Editor?"

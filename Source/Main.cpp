@@ -12,7 +12,8 @@
 #include "Headers/Goomba.hpp"
 #include "Headers/Koopa.hpp"
 #include "Headers/ConvertSketch.hpp"
-
+#include "Headers/MarioState.hpp"
+#include "Headers/bigState.hpp"
 int main()
 {
 	unsigned char current_level = 0;

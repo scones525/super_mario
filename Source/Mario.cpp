@@ -8,8 +8,10 @@
 #include "Headers/MapManager.hpp"
 #include "Headers/Mushroom.hpp"
 #include "Headers/Mario.hpp"
+#include "Headers/MarioState.hpp"
 
-
+#include "Headers/bigState.hpp"
+#include "Headers/smallState.hpp"
 Mario::Mario() :
 	crouching(0),
 	dead(0),
@@ -26,6 +28,7 @@ Mario::Mario() :
 	growth_timer(0),
 	invincible_timer(0),
 	big_walk_animation(CELL_SIZE, "Resources/Images/BigMarioWalk.png", MARIO_WALK_ANIMATION_SPEED),
+	m_pState(new smallState()),
 	walk_animation(CELL_SIZE, "Resources/Images/MarioWalk.png", MARIO_WALK_ANIMATION_SPEED)
 {
 	texture.loadFromFile("Resources/Images/MarioIdle.png");
@@ -690,5 +693,22 @@ void Mario::update_coin(MapManager& i_map_manager){
 	for (const sf::Vector2i& cell : cells)
 	{
 		i_map_manager.set_map_cell(cell.x, cell.y, Cell::Empty);
+	}
+}
+
+void Mario::smallTobig(){
+	m_pState -> smallTobig(this);
+}
+void Mario::BigTosmall(){
+	m_pState -> bigTosmall(this);
+}
+
+void Mario::setState(State state){
+	delete m_pState;
+	if(state == ST_big){
+		m_pState = new bigState();
+	}
+	else if(state == ST_small){
+		m_pState = new smallState();
 	}
 }

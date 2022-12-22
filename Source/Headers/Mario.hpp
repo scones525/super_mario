@@ -1,8 +1,10 @@
 #ifndef MARIO_H
 #define MARIO_H
+
+
 #pragma once
 
-
+class MarioState;
 class Mario 
 {
 	bool crouching;
@@ -36,20 +38,11 @@ class Mario
 	Animation big_walk_animation;
 	Animation walk_animation;
 
-	//State pattern
-	class State *current;
-
-
 public:
+
+	
+
 	Mario();
-
-
-	//State pattern implement
-	void setCurrent(State *s){
-		current = s;
-	}
-	void SmallToBigMario();
-	void bigToSmallMario();
 
 	bool get_dead() const;
 
@@ -75,24 +68,18 @@ public:
 	void update_is_moving_now(MapManager& i_map_manager,bool moving);
 	void update_eat_mushroom(MapManager& i_map_manager,const unsigned i_view_x);
 	void update_coin(MapManager& i_map_manager);
+public: 
+	enum State{
+		ST_small,
+		ST_big
+	};
+
+	void smallTobig();
+	void BigTosmall();
+	void setState(State state);
+private:
+	MarioState *m_pState;
 };
-
-
-
-/*class BigMario : public Istate
-{
-	private : 
-		static BigMario instance = new BigMario();
-		BigMario();
-	public :
-		static BigMario GetInstance{
-			return instance;
-		}
-};
-
-class SmallMario : public Istate{
-
-};*/
 
 
 bool is_moving_or_not(int);
